@@ -77,47 +77,82 @@ public class Seller {
         return "ERROR";
     }
 
-    public boolean addToOrder(String category, String product, int quantity, double bill, boolean orderIsFinished) {
-
+public boolean addToOrder(String category, String product, int quantity, double bill, boolean orderIsFinished) {
         try {
+            // Initialize order_id
             int order_id = 0;
 
+            // Get the id of the latest order from the database
             ResultSet rs = dc.executeQuery("select max(order_id) as mx from orders");
 
+            // Check if a row exists in the table, and update order_id value if it does
             if (rs.next()) {
                 order_id = rs.getInt("mx");
             }
+
+            // If the order is finished, increment the order id
             if (orderIsFinished) {
                 order_id++;
             }
-            ResultSet resultSet = dc.executeQuery("select quantity,bill from orders where order_id='" + order_id
-                    + "' and product_name='" + product + "'");
-            if (resultSet.next()) {
-                int quant = resultSet.getInt("quantity") + quantity;
-                double b = resultSet.getDouble("bill") + bill;
 
-                dc.excuteUpdate("update orders set quantity='" + quant + "' , bill='" + b + "'where order_id='" + order_id
-                        + "' and product_name='" + product + "'");
-            } else {
+            // Check if a row exists for the same product and order id
+            ResultSet resultSet = dc.executeQuery("select quantity from stock where name ='" + product + "'");
+            // If a row exists, check if sufficient quantity of product is available for
+            // purchasing the required quantity
+            if (resultSet.next()) {
+                int availableQuantity = resultSet.getInt("quantity");
+                if (quantity > availableQuantity) { // If no sufficient quantity is present, show error message and
+                                                    // return false
+                    JOptionPane.showMessageDialog(null, "Quantity not enough", "Error", JOptionPane.ERROR_MESSAGE);
+                    return false;
+                } else { // Update order's quantity and bill, if sufficient quantity is present
+                    resultSet = dc.executeQuery("select quantity,bill from orders where order_id='" + order_id
+                            + "' and product_name='" + product + "'");
+
+                    if (resultSet.next()) {
+                        int q = resultSet.getInt("quantity") + quantity;
+                        double b = resultSet.getDouble("bill") + bill;
+
+                        // Update quantity and bill of the order in orders table
+                        dc.excuteUpdate(
+                                "update orders set quantity='" + q + "' , bill='" + b + "'where order_id='" + order_id
+                                        + "' and product_name='" + product + "'");
+                        int z = dc.excuteUpdate("select quantity from stock where name ='" + product + "'");
+                        return true;
+                    }
+                }
+            } else { // If no row exists for the product, create a new row
+                // Add details to orders table
                 dc.excuteUpdate(
                         "insert into orders (order_id,product_name,product_category,quantity,bill,date) values ('"
                                 + order_id + "','" + product + "','" + category + "','" + quantity + "','" + bill
                                 + "','" + LocalDateTime.now() + "')");
             }
-            // update quantity
+
+            // Update the quantity of the product in the stock table
+            // Check if a row exists in stock table
             rs = dc.executeQuery("select quantity from stock where name ='" + product + "'");
             if (rs.next()) {
                 int q;
                 q = rs.getInt("quantity");
-                q -= quantity;
+                q -= quantity; // Reduce the quantity in stock table after the product is purchased
+
+                // Update quantity of product in stock table
                 dc.excuteUpdate("update stock set quantity='" + q + "' where name = '" + product + "'");
+                dc.excuteUpdate(
+                        "insert into orders(order_id,product_name,product_category,quantity,bill,date) values ('"
+                                + order_id + "','" + product + "','" + category + "','" + quantity + "','" + bill
+                                + "','" + LocalDateTime.now() + "')");
             }
+
             return false;
         } catch (SQLException ex) {
+            // Print the stack trace if any exceptions occur
             ex.printStackTrace();
         }
-        return false;
+        return false; // Return false if anything fails
     }
+
 
     String getTotal(String orderId) {
         try {
