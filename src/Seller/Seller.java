@@ -77,7 +77,7 @@ public class Seller {
         return "ERROR";
     }
 
-public boolean addToOrder(String category, String product, int quantity, double bill, boolean orderIsFinished) {
+    public boolean addToOrder(String category, String product, int quantity, double bill, boolean orderIsFinished) {
         try {
             // Initialize order_id
             int order_id = 0;
@@ -117,7 +117,7 @@ public boolean addToOrder(String category, String product, int quantity, double 
                         dc.excuteUpdate(
                                 "update orders set quantity='" + q + "' , bill='" + b + "'where order_id='" + order_id
                                         + "' and product_name='" + product + "'");
-                        int z = dc.excuteUpdate("select quantity from stock where name ='" + product + "'");
+                        dc.excuteUpdate("select quantity from stock where name ='" + product + "'");
                         return true;
                     }
                 }
@@ -139,6 +139,7 @@ public boolean addToOrder(String category, String product, int quantity, double 
 
                 // Update quantity of product in stock table
                 dc.excuteUpdate("update stock set quantity='" + q + "' where name = '" + product + "'");
+
                 dc.excuteUpdate(
                         "insert into orders(order_id,product_name,product_category,quantity,bill,date) values ('"
                                 + order_id + "','" + product + "','" + category + "','" + quantity + "','" + bill
@@ -152,7 +153,6 @@ public boolean addToOrder(String category, String product, int quantity, double 
         }
         return false; // Return false if anything fails
     }
-
 
     String getTotal(String orderId) {
         try {
