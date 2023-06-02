@@ -11,9 +11,12 @@ public class DatabaseConnection {
     
     public DatabaseConnection() {
         try {
-            String url = "jdbc:mysql://196.221.151.195:3306/market_db";
-            String username = "dev";
-            String password = "pass";
+            // String url = "jdbc:mysql://196.221.151.195:3306/market_db";
+            // String username = "dev";
+            // String password = "pass";
+            String url = "jdbc:mysql://db4free.net:3306/market_db";
+            String username = "development";
+            String password = "password";
             con = DriverManager.getConnection(url, username, password);
             stmnt = con.createStatement();
         } catch (SQLException ex) {
