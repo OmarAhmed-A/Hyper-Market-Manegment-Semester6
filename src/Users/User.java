@@ -1,12 +1,14 @@
 package Users;
 
 import DatabaseConncection.*;
+
 public class User {
 
     public static DatabaseConnection DB;
     private static String username;
     private static Password password;
     private static int id;
+
     public User() {
         DB = new DatabaseConnection();
     }
@@ -41,9 +43,7 @@ public class User {
         return User.username;
     }
 
-    public String getpassword() {
-        return password.getHashedPassword();
-    }
+    // we don't need getter methode for password
 
     public void LogOut() {
         System.exit(0);
