@@ -7,9 +7,9 @@ public class Main {
 
     public static void main(String[] args) {
         FlatDarkLaf.setup();
-       login_register_implemintation impmnt=new login_register_implemintation();
+       Login loginimp=new Login();
     
-        if(impmnt.admin_is_exist())
+        if(loginimp.admin_is_exist())
         {
             
             LoadingScreen.start(new admin_registration(), 5);
